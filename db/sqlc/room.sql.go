@@ -7,8 +7,6 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createRoom = `-- name: CreateRoom :one
@@ -26,12 +24,12 @@ RETURNING room_id, max_guests, balcony, fridge, indoor_pool, gaming_console
 `
 
 type CreateRoomParams struct {
-	RoomID        int32       `json:"room_id"`
-	MaxGuests     pgtype.Int4 `json:"max_guests"`
-	Balcony       pgtype.Bool `json:"balcony"`
-	Fridge        pgtype.Bool `json:"fridge"`
-	IndoorPool    pgtype.Bool `json:"indoor_pool"`
-	GamingConsole pgtype.Bool `json:"gaming_console"`
+	RoomID        int32 `json:"room_id"`
+	MaxGuests     int32 `json:"max_guests"`
+	Balcony       bool  `json:"balcony"`
+	Fridge        bool  `json:"fridge"`
+	IndoorPool    bool  `json:"indoor_pool"`
+	GamingConsole bool  `json:"gaming_console"`
 }
 
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
@@ -83,6 +81,31 @@ func (q *Queries) GetRoom(ctx context.Context, roomID int32) (Room, error) {
 	return i, err
 }
 
+const listAllRoomIDs = `-- name: ListAllRoomIDs :many
+SELECT room_id 
+FROM room
+`
+
+func (q *Queries) ListAllRoomIDs(ctx context.Context) ([]int32, error) {
+	rows, err := q.db.Query(ctx, listAllRoomIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int32{}
+	for rows.Next() {
+		var room_id int32
+		if err := rows.Scan(&room_id); err != nil {
+			return nil, err
+		}
+		items = append(items, room_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRooms = `-- name: ListRooms :many
 SELECT room_id, max_guests, balcony, fridge, indoor_pool, gaming_console FROM room
 ORDER BY room_id
@@ -130,8 +153,8 @@ RETURNING room_id, max_guests, balcony, fridge, indoor_pool, gaming_console
 `
 
 type UpdateMaxGuestsParams struct {
-	RoomID    int32       `json:"room_id"`
-	MaxGuests pgtype.Int4 `json:"max_guests"`
+	RoomID    int32 `json:"room_id"`
+	MaxGuests int32 `json:"max_guests"`
 }
 
 func (q *Queries) UpdateMaxGuests(ctx context.Context, arg UpdateMaxGuestsParams) error {
@@ -147,8 +170,8 @@ RETURNING room_id, max_guests, balcony, fridge, indoor_pool, gaming_console
 `
 
 type UpdateRoomConsoleParams struct {
-	RoomID        int32       `json:"room_id"`
-	GamingConsole pgtype.Bool `json:"gaming_console"`
+	RoomID        int32 `json:"room_id"`
+	GamingConsole bool  `json:"gaming_console"`
 }
 
 func (q *Queries) UpdateRoomConsole(ctx context.Context, arg UpdateRoomConsoleParams) error {
@@ -164,8 +187,8 @@ RETURNING room_id, max_guests, balcony, fridge, indoor_pool, gaming_console
 `
 
 type UpdateRoomFridgeParams struct {
-	RoomID int32       `json:"room_id"`
-	Fridge pgtype.Bool `json:"fridge"`
+	RoomID int32 `json:"room_id"`
+	Fridge bool  `json:"fridge"`
 }
 
 func (q *Queries) UpdateRoomFridge(ctx context.Context, arg UpdateRoomFridgeParams) error {

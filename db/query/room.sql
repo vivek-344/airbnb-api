@@ -11,6 +11,10 @@ INSERT INTO room (
 )
 RETURNING *;
 
+-- name: ListAllRoomIDs :many
+SELECT room_id 
+FROM room;
+
 -- name: GetRoom :one
 SELECT * FROM room
 WHERE room_id = $1 LIMIT 1;

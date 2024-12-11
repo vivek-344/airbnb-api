@@ -43,6 +43,10 @@ WHERE room_id = $1
   AND date >= CURRENT_DATE 
   AND date < CURRENT_DATE + INTERVAL '30 days';
 
+-- name: GetMaxDate :one
+SELECT MAX(date) 
+FROM room_availability;
+
 -- name: GetMinimumRate :one
 SELECT MIN(night_rate) 
 FROM room_availability
@@ -63,5 +67,5 @@ ORDER BY year, month;
 -- name: GetDateCount :one
 SELECT COUNT(DISTINCT date) FROM room_availability;
 
--- name: DeleteRoomAvailabilityData :exec
+-- name: DeleteOldRoomAvailabilityData :exec
 DELETE FROM room_availability WHERE date < CURRENT_DATE;

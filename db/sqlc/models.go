@@ -9,17 +9,17 @@ import (
 )
 
 type Room struct {
-	RoomID        int32       `json:"room_id"`
-	MaxGuests     pgtype.Int4 `json:"max_guests"`
-	Balcony       pgtype.Bool `json:"balcony"`
-	Fridge        pgtype.Bool `json:"fridge"`
-	IndoorPool    pgtype.Bool `json:"indoor_pool"`
-	GamingConsole pgtype.Bool `json:"gaming_console"`
+	RoomID        int32 `json:"room_id"`
+	MaxGuests     int32 `json:"max_guests"`
+	Balcony       bool  `json:"balcony"`
+	Fridge        bool  `json:"fridge"`
+	IndoorPool    bool  `json:"indoor_pool"`
+	GamingConsole bool  `json:"gaming_console"`
 }
 
 type RoomAvailability struct {
-	RoomID      pgtype.Int4    `json:"room_id"`
-	Date        pgtype.Date    `json:"date"`
-	IsAvailable pgtype.Bool    `json:"is_available"`
-	NightRate   pgtype.Numeric `json:"night_rate"`
+	RoomID      int32       `json:"room_id"`
+	Date        pgtype.Date `json:"date"`
+	IsAvailable bool        `json:"is_available"`
+	NightRate   int32       `json:"night_rate"`
 }

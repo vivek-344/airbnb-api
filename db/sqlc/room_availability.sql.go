@@ -24,10 +24,10 @@ RETURNING room_id, date, is_available, night_rate
 `
 
 type CreateRoomAvailabilityParams struct {
-	RoomID      pgtype.Int4    `json:"room_id"`
-	Date        pgtype.Date    `json:"date"`
-	IsAvailable pgtype.Bool    `json:"is_available"`
-	NightRate   pgtype.Numeric `json:"night_rate"`
+	RoomID      int32       `json:"room_id"`
+	Date        pgtype.Date `json:"date"`
+	IsAvailable bool        `json:"is_available"`
+	NightRate   int32       `json:"night_rate"`
 }
 
 func (q *Queries) CreateRoomAvailability(ctx context.Context, arg CreateRoomAvailabilityParams) (RoomAvailability, error) {
@@ -47,12 +47,12 @@ func (q *Queries) CreateRoomAvailability(ctx context.Context, arg CreateRoomAvai
 	return i, err
 }
 
-const deleteRoomAvailabilityData = `-- name: DeleteRoomAvailabilityData :exec
+const deleteOldRoomAvailabilityData = `-- name: DeleteOldRoomAvailabilityData :exec
 DELETE FROM room_availability WHERE date < CURRENT_DATE
 `
 
-func (q *Queries) DeleteRoomAvailabilityData(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, deleteRoomAvailabilityData)
+func (q *Queries) DeleteOldRoomAvailabilityData(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, deleteOldRoomAvailabilityData)
 	return err
 }
 
@@ -73,7 +73,7 @@ type GetAvailabilityPercentageRow struct {
 	AvailabilityPercentage int32          `json:"availability_percentage"`
 }
 
-func (q *Queries) GetAvailabilityPercentage(ctx context.Context, roomID pgtype.Int4) ([]GetAvailabilityPercentageRow, error) {
+func (q *Queries) GetAvailabilityPercentage(ctx context.Context, roomID int32) ([]GetAvailabilityPercentageRow, error) {
 	rows, err := q.db.Query(ctx, getAvailabilityPercentage, roomID)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ WHERE room_id = $1
   AND date < CURRENT_DATE + INTERVAL '30 days'
 `
 
-func (q *Queries) GetAverageRate(ctx context.Context, roomID pgtype.Int4) (float64, error) {
+func (q *Queries) GetAverageRate(ctx context.Context, roomID int32) (float64, error) {
 	row := q.db.QueryRow(ctx, getAverageRate, roomID)
 	var avg float64
 	err := row.Scan(&avg)
@@ -119,6 +119,18 @@ func (q *Queries) GetDateCount(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const getMaxDate = `-- name: GetMaxDate :one
+SELECT MAX(date) 
+FROM room_availability
+`
+
+func (q *Queries) GetMaxDate(ctx context.Context) (pgtype.Date, error) {
+	row := q.db.QueryRow(ctx, getMaxDate)
+	var max pgtype.Date
+	err := row.Scan(&max)
+	return max, err
+}
+
 const getMaximumRate = `-- name: GetMaximumRate :one
 SELECT MAX(night_rate) 
 FROM room_availability
@@ -127,9 +139,9 @@ WHERE room_id = $1
   AND date < CURRENT_DATE + INTERVAL '30 days'
 `
 
-func (q *Queries) GetMaximumRate(ctx context.Context, roomID pgtype.Int4) (interface{}, error) {
+func (q *Queries) GetMaximumRate(ctx context.Context, roomID int32) (int32, error) {
 	row := q.db.QueryRow(ctx, getMaximumRate, roomID)
-	var max interface{}
+	var max int32
 	err := row.Scan(&max)
 	return max, err
 }
@@ -142,9 +154,9 @@ WHERE room_id = $1
   AND date < CURRENT_DATE + INTERVAL '30 days'
 `
 
-func (q *Queries) GetMinimumRate(ctx context.Context, roomID pgtype.Int4) (interface{}, error) {
+func (q *Queries) GetMinimumRate(ctx context.Context, roomID int32) (int32, error) {
 	row := q.db.QueryRow(ctx, getMinimumRate, roomID)
-	var min interface{}
+	var min int32
 	err := row.Scan(&min)
 	return min, err
 }
@@ -156,7 +168,7 @@ LIMIT 1
 `
 
 type GetRoomAvailabilityByDateParams struct {
-	RoomID pgtype.Int4 `json:"room_id"`
+	RoomID int32       `json:"room_id"`
 	Date   pgtype.Date `json:"date"`
 }
 
@@ -177,7 +189,7 @@ SELECT date FROM room_availability
 WHERE room_id = $1 AND is_available = TRUE
 `
 
-func (q *Queries) ListAvailableDates(ctx context.Context, roomID pgtype.Int4) ([]pgtype.Date, error) {
+func (q *Queries) ListAvailableDates(ctx context.Context, roomID int32) ([]pgtype.Date, error) {
 	rows, err := q.db.Query(ctx, listAvailableDates, roomID)
 	if err != nil {
 		return nil, err
@@ -204,12 +216,12 @@ LIMIT 30
 `
 
 type ListRoomAvailabilityRow struct {
-	Date        pgtype.Date    `json:"date"`
-	IsAvailable pgtype.Bool    `json:"is_available"`
-	NightRate   pgtype.Numeric `json:"night_rate"`
+	Date        pgtype.Date `json:"date"`
+	IsAvailable bool        `json:"is_available"`
+	NightRate   int32       `json:"night_rate"`
 }
 
-func (q *Queries) ListRoomAvailability(ctx context.Context, roomID pgtype.Int4) ([]ListRoomAvailabilityRow, error) {
+func (q *Queries) ListRoomAvailability(ctx context.Context, roomID int32) ([]ListRoomAvailabilityRow, error) {
 	rows, err := q.db.Query(ctx, listRoomAvailability, roomID)
 	if err != nil {
 		return nil, err
@@ -237,10 +249,10 @@ WHERE room_id = $1 AND date = $2
 `
 
 type UpdateRoomAvailabilityParams struct {
-	RoomID      pgtype.Int4    `json:"room_id"`
-	Date        pgtype.Date    `json:"date"`
-	IsAvailable pgtype.Bool    `json:"is_available"`
-	NightRate   pgtype.Numeric `json:"night_rate"`
+	RoomID      int32       `json:"room_id"`
+	Date        pgtype.Date `json:"date"`
+	IsAvailable bool        `json:"is_available"`
+	NightRate   int32       `json:"night_rate"`
 }
 
 func (q *Queries) UpdateRoomAvailability(ctx context.Context, arg UpdateRoomAvailabilityParams) error {
