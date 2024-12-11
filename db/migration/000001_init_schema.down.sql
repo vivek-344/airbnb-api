@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS room_availability;
+DROP TABLE IF EXISTS room;
