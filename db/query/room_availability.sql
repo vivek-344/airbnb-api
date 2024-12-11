@@ -37,22 +37,28 @@ WHERE room_id = $1
   AND date < CURRENT_DATE + INTERVAL '30 days';
 
 -- name: GetMaximumRate :one
-SELECT MAX(night_rate) 
+SELECT night_rate
 FROM room_availability
 WHERE room_id = $1
   AND date >= CURRENT_DATE 
-  AND date < CURRENT_DATE + INTERVAL '30 days';
+  AND date < CURRENT_DATE + INTERVAL '30 days'
+ORDER BY night_rate DESC
+LIMIT 1;
 
 -- name: GetMaxDate :one
-SELECT MAX(date) 
-FROM room_availability;
+SELECT date
+FROM room_availability
+ORDER BY night_rate DESC
+LIMIT 1;
 
 -- name: GetMinimumRate :one
-SELECT MIN(night_rate) 
+SELECT night_rate
 FROM room_availability
 WHERE room_id = $1
   AND date >= CURRENT_DATE 
-  AND date < CURRENT_DATE + INTERVAL '30 days';
+  AND date < CURRENT_DATE + INTERVAL '30 days'
+ORDER BY night_rate ASC
+LIMIT 1;
 
 -- name: GetAvailabilityPercentage :many
 SELECT

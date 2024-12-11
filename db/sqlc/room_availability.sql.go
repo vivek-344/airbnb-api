@@ -120,45 +120,51 @@ func (q *Queries) GetDateCount(ctx context.Context) (int64, error) {
 }
 
 const getMaxDate = `-- name: GetMaxDate :one
-SELECT MAX(date) 
+SELECT date
 FROM room_availability
+ORDER BY night_rate DESC
+LIMIT 1
 `
 
 func (q *Queries) GetMaxDate(ctx context.Context) (pgtype.Date, error) {
 	row := q.db.QueryRow(ctx, getMaxDate)
-	var max pgtype.Date
-	err := row.Scan(&max)
-	return max, err
+	var date pgtype.Date
+	err := row.Scan(&date)
+	return date, err
 }
 
 const getMaximumRate = `-- name: GetMaximumRate :one
-SELECT MAX(night_rate) 
+SELECT night_rate
 FROM room_availability
 WHERE room_id = $1
   AND date >= CURRENT_DATE 
   AND date < CURRENT_DATE + INTERVAL '30 days'
+ORDER BY night_rate DESC
+LIMIT 1
 `
 
 func (q *Queries) GetMaximumRate(ctx context.Context, roomID int32) (int32, error) {
 	row := q.db.QueryRow(ctx, getMaximumRate, roomID)
-	var max int32
-	err := row.Scan(&max)
-	return max, err
+	var night_rate int32
+	err := row.Scan(&night_rate)
+	return night_rate, err
 }
 
 const getMinimumRate = `-- name: GetMinimumRate :one
-SELECT MIN(night_rate) 
+SELECT night_rate
 FROM room_availability
 WHERE room_id = $1
   AND date >= CURRENT_DATE 
   AND date < CURRENT_DATE + INTERVAL '30 days'
+ORDER BY night_rate ASC
+LIMIT 1
 `
 
 func (q *Queries) GetMinimumRate(ctx context.Context, roomID int32) (int32, error) {
 	row := q.db.QueryRow(ctx, getMinimumRate, roomID)
-	var min int32
-	err := row.Scan(&min)
-	return min, err
+	var night_rate int32
+	err := row.Scan(&night_rate)
+	return night_rate, err
 }
 
 const getRoomAvailabilityByDate = `-- name: GetRoomAvailabilityByDate :one
