@@ -58,9 +58,9 @@ func (q *Queries) DeleteOldRoomAvailabilityData(ctx context.Context) error {
 
 const getAvailabilityPercentage = `-- name: GetAvailabilityPercentage :many
 SELECT
-  EXTRACT(YEAR FROM date) AS year,
-  EXTRACT(MONTH FROM date) AS month,
-  COUNT(CASE WHEN is_available THEN 1 END) * 100.0 / COUNT(*) AS availability_percentage
+ EXTRACT(YEAR FROM date) AS year,
+ EXTRACT(MONTH FROM date) AS month,
+ CAST(COUNT(CASE WHEN is_available THEN 1 END) * 100.0 / COUNT(*) AS DECIMAL(10,2)) AS availability_percentage
 FROM room_availability
 WHERE room_id = $1
 GROUP BY year, month
@@ -70,7 +70,7 @@ ORDER BY year, month
 type GetAvailabilityPercentageRow struct {
 	Year                   pgtype.Numeric `json:"year"`
 	Month                  pgtype.Numeric `json:"month"`
-	AvailabilityPercentage int32          `json:"availability_percentage"`
+	AvailabilityPercentage pgtype.Numeric `json:"availability_percentage"`
 }
 
 func (q *Queries) GetAvailabilityPercentage(ctx context.Context, roomID int32) ([]GetAvailabilityPercentageRow, error) {
@@ -193,6 +193,7 @@ func (q *Queries) GetRoomAvailabilityByDate(ctx context.Context, arg GetRoomAvai
 const listAvailableDates = `-- name: ListAvailableDates :many
 SELECT date FROM room_availability
 WHERE room_id = $1 AND is_available = TRUE
+LIMIT 30
 `
 
 func (q *Queries) ListAvailableDates(ctx context.Context, roomID int32) ([]pgtype.Date, error) {

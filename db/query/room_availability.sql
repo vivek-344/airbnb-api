@@ -27,7 +27,8 @@ LIMIT 30;
 
 -- name: ListAvailableDates :many
 SELECT date FROM room_availability
-WHERE room_id = $1 AND is_available = TRUE;
+WHERE room_id = $1 AND is_available = TRUE
+LIMIT 30;
 
 -- name: GetAverageRate :one
 SELECT AVG(night_rate) 
@@ -62,9 +63,9 @@ LIMIT 1;
 
 -- name: GetAvailabilityPercentage :many
 SELECT
-  EXTRACT(YEAR FROM date) AS year,
-  EXTRACT(MONTH FROM date) AS month,
-  COUNT(CASE WHEN is_available THEN 1 END) * 100.0 / COUNT(*) AS availability_percentage
+ EXTRACT(YEAR FROM date) AS year,
+ EXTRACT(MONTH FROM date) AS month,
+ CAST(COUNT(CASE WHEN is_available THEN 1 END) * 100.0 / COUNT(*) AS DECIMAL(10,2)) AS availability_percentage
 FROM room_availability
 WHERE room_id = $1
 GROUP BY year, month

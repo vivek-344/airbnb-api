@@ -5,27 +5,38 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	db "github.com/vivek-344/airbnb-api/db/sqlc"
+	"github.com/vivek-344/airbnb-api/api"
 	"github.com/vivek-344/airbnb-api/util"
 )
 
-var queries *db.Queries
-var DB *pgxpool.Pool
-
 func main() {
+	// Load the application configuration from the environment.
 	config, err := util.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config: ", err)
 	}
 
-	DB, err = pgxpool.New(context.Background(), config.DBSource)
+	// Establish a connection pool to the PostgreSQL database.
+	conn, err := pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to the database", err)
 	}
 
-	queries = db.New(DB)
+	// Initialize the database store with the connection pool.
+	store := api.NewStore(conn)
 
-	// util.FeedRoomData(queries)
+	// Create a new API server with the initialized store.
+	server := api.NewServer(*store)
 
-	util.FeedAvailabilityData(queries)
+	// Uncomment the following line to populate the `room` table with test data.
+	// util.FeedRoomData(store.Queries)
+
+	// Populate the `room_availability` table with test data.
+	util.FeedAvailabilityData(store.Queries)
+
+	// Start the server and listen on the configured address.
+	err = server.Start(config.ServerAddress)
+	if err != nil {
+		log.Fatal("cannot start server: ", err)
+	}
 }
