@@ -28,8 +28,8 @@ func main() {
 	// Create a new API server with the initialized store.
 	server := api.NewServer(*store)
 
-	// Uncomment the following line to populate the `room` table with test data.
-	// util.FeedRoomData(store.Queries)
+	// Comment out the following line after populating the `room` table with test data.
+	 util.FeedRoomData(store.Queries)
 
 	// Populate the `room_availability` table with test data.
 	util.FeedAvailabilityData(store.Queries)
