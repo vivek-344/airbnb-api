@@ -135,15 +135,31 @@ func TestGetAverageRate(t *testing.T) {
 }
 
 func TestGetDateCount(t *testing.T) {
+	room := createRandomRoom(1, t)
+	entryTime := time.Now().UTC()
+	entryDate := pgtype.Date{Valid: true, Time: time.Date(entryTime.Year(), entryTime.Month(), entryTime.Day(), 0, 0, 0, 0, time.UTC)}
+	createRandomRoomAvailability(entryDate, room, t)
+
 	count, err := testQueries.GetDateCount(context.Background())
 	require.NoError(t, err)
 	require.NotEmpty(t, count)
+
+	testQueries.DeleteAllAvailabilityForRoom(context.Background(), room.RoomID)
+	deleteRoom(room, t)
 }
 
 func TestGetMaxDate(t *testing.T) {
+	room := createRandomRoom(1, t)
+	entryTime := time.Now().UTC()
+	entryDate := pgtype.Date{Valid: true, Time: time.Date(entryTime.Year(), entryTime.Month(), entryTime.Day(), 0, 0, 0, 0, time.UTC)}
+	createRandomRoomAvailability(entryDate, room, t)
+
 	max_date, err := testQueries.GetMaxDate(context.Background())
 	require.NoError(t, err)
 	require.NotEmpty(t, max_date)
+
+	testQueries.DeleteAllAvailabilityForRoom(context.Background(), room.RoomID)
+	deleteRoom(room, t)
 }
 
 func TestGetMaximumRate(t *testing.T) {
