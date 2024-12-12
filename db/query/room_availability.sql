@@ -9,11 +9,12 @@ INSERT INTO room_availability (
 )
 RETURNING *;
 
--- name: UpdateRoomAvailability :exec
+-- name: UpdateRoomAvailability :one
 UPDATE room_availability
 SET is_available = $3,
     night_rate = $4
-WHERE room_id = $1 AND date = $2;
+WHERE room_id = $1 AND date = $2
+RETURNING *;
 
 -- name: GetRoomAvailabilityByDate :one
 SELECT * FROM room_availability
@@ -76,3 +77,6 @@ SELECT COUNT(DISTINCT date) FROM room_availability;
 
 -- name: DeleteOldRoomAvailabilityData :exec
 DELETE FROM room_availability WHERE date < CURRENT_DATE;
+
+-- name: DeleteAllAvailabilityForRoom :exec
+DELETE FROM room_availability WHERE room_id = $1;

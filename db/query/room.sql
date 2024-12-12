@@ -25,19 +25,19 @@ ORDER BY room_id
 LIMIT $1
 OFFSET $2;
 
--- name: UpdateMaxGuests :exec
+-- name: UpdateMaxGuests :one
 UPDATE room
 SET max_guests = $2
 WHERE room_id = $1
 RETURNING *;
 
--- name: UpdateRoomFridge :exec
+-- name: UpdateRoomFridge :one
 UPDATE room
 SET fridge = $2
 WHERE room_id = $1
 RETURNING *;
 
--- name: UpdateRoomConsole :exec
+-- name: UpdateRoomConsole :one
 UPDATE room
 SET gaming_console = $2
 WHERE room_id = $1
@@ -45,3 +45,6 @@ RETURNING *;
 
 -- name: DeleteRoom :exec
 DELETE FROM room WHERE room_id = $1;
+
+-- name: GetRoomCount :one
+SELECT COUNT(room_id) FROM room;

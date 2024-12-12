@@ -81,6 +81,17 @@ func (q *Queries) GetRoom(ctx context.Context, roomID int32) (Room, error) {
 	return i, err
 }
 
+const getRoomCount = `-- name: GetRoomCount :one
+SELECT COUNT(room_id) FROM room
+`
+
+func (q *Queries) GetRoomCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, getRoomCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const listAllRoomIDs = `-- name: ListAllRoomIDs :many
 SELECT room_id 
 FROM room
@@ -145,7 +156,7 @@ func (q *Queries) ListRooms(ctx context.Context, arg ListRoomsParams) ([]Room, e
 	return items, nil
 }
 
-const updateMaxGuests = `-- name: UpdateMaxGuests :exec
+const updateMaxGuests = `-- name: UpdateMaxGuests :one
 UPDATE room
 SET max_guests = $2
 WHERE room_id = $1
@@ -157,12 +168,21 @@ type UpdateMaxGuestsParams struct {
 	MaxGuests int32 `json:"max_guests"`
 }
 
-func (q *Queries) UpdateMaxGuests(ctx context.Context, arg UpdateMaxGuestsParams) error {
-	_, err := q.db.Exec(ctx, updateMaxGuests, arg.RoomID, arg.MaxGuests)
-	return err
+func (q *Queries) UpdateMaxGuests(ctx context.Context, arg UpdateMaxGuestsParams) (Room, error) {
+	row := q.db.QueryRow(ctx, updateMaxGuests, arg.RoomID, arg.MaxGuests)
+	var i Room
+	err := row.Scan(
+		&i.RoomID,
+		&i.MaxGuests,
+		&i.Balcony,
+		&i.Fridge,
+		&i.IndoorPool,
+		&i.GamingConsole,
+	)
+	return i, err
 }
 
-const updateRoomConsole = `-- name: UpdateRoomConsole :exec
+const updateRoomConsole = `-- name: UpdateRoomConsole :one
 UPDATE room
 SET gaming_console = $2
 WHERE room_id = $1
@@ -174,12 +194,21 @@ type UpdateRoomConsoleParams struct {
 	GamingConsole bool  `json:"gaming_console"`
 }
 
-func (q *Queries) UpdateRoomConsole(ctx context.Context, arg UpdateRoomConsoleParams) error {
-	_, err := q.db.Exec(ctx, updateRoomConsole, arg.RoomID, arg.GamingConsole)
-	return err
+func (q *Queries) UpdateRoomConsole(ctx context.Context, arg UpdateRoomConsoleParams) (Room, error) {
+	row := q.db.QueryRow(ctx, updateRoomConsole, arg.RoomID, arg.GamingConsole)
+	var i Room
+	err := row.Scan(
+		&i.RoomID,
+		&i.MaxGuests,
+		&i.Balcony,
+		&i.Fridge,
+		&i.IndoorPool,
+		&i.GamingConsole,
+	)
+	return i, err
 }
 
-const updateRoomFridge = `-- name: UpdateRoomFridge :exec
+const updateRoomFridge = `-- name: UpdateRoomFridge :one
 UPDATE room
 SET fridge = $2
 WHERE room_id = $1
@@ -191,7 +220,16 @@ type UpdateRoomFridgeParams struct {
 	Fridge bool  `json:"fridge"`
 }
 
-func (q *Queries) UpdateRoomFridge(ctx context.Context, arg UpdateRoomFridgeParams) error {
-	_, err := q.db.Exec(ctx, updateRoomFridge, arg.RoomID, arg.Fridge)
-	return err
+func (q *Queries) UpdateRoomFridge(ctx context.Context, arg UpdateRoomFridgeParams) (Room, error) {
+	row := q.db.QueryRow(ctx, updateRoomFridge, arg.RoomID, arg.Fridge)
+	var i Room
+	err := row.Scan(
+		&i.RoomID,
+		&i.MaxGuests,
+		&i.Balcony,
+		&i.Fridge,
+		&i.IndoorPool,
+		&i.GamingConsole,
+	)
+	return i, err
 }

@@ -47,6 +47,15 @@ func (q *Queries) CreateRoomAvailability(ctx context.Context, arg CreateRoomAvai
 	return i, err
 }
 
+const deleteAllAvailabilityForRoom = `-- name: DeleteAllAvailabilityForRoom :exec
+DELETE FROM room_availability WHERE room_id = $1
+`
+
+func (q *Queries) DeleteAllAvailabilityForRoom(ctx context.Context, roomID int32) error {
+	_, err := q.db.Exec(ctx, deleteAllAvailabilityForRoom, roomID)
+	return err
+}
+
 const deleteOldRoomAvailabilityData = `-- name: DeleteOldRoomAvailabilityData :exec
 DELETE FROM room_availability WHERE date < CURRENT_DATE
 `
@@ -248,11 +257,12 @@ func (q *Queries) ListRoomAvailability(ctx context.Context, roomID int32) ([]Lis
 	return items, nil
 }
 
-const updateRoomAvailability = `-- name: UpdateRoomAvailability :exec
+const updateRoomAvailability = `-- name: UpdateRoomAvailability :one
 UPDATE room_availability
 SET is_available = $3,
     night_rate = $4
 WHERE room_id = $1 AND date = $2
+RETURNING room_id, date, is_available, night_rate
 `
 
 type UpdateRoomAvailabilityParams struct {
@@ -262,12 +272,19 @@ type UpdateRoomAvailabilityParams struct {
 	NightRate   int32       `json:"night_rate"`
 }
 
-func (q *Queries) UpdateRoomAvailability(ctx context.Context, arg UpdateRoomAvailabilityParams) error {
-	_, err := q.db.Exec(ctx, updateRoomAvailability,
+func (q *Queries) UpdateRoomAvailability(ctx context.Context, arg UpdateRoomAvailabilityParams) (RoomAvailability, error) {
+	row := q.db.QueryRow(ctx, updateRoomAvailability,
 		arg.RoomID,
 		arg.Date,
 		arg.IsAvailable,
 		arg.NightRate,
 	)
-	return err
+	var i RoomAvailability
+	err := row.Scan(
+		&i.RoomID,
+		&i.Date,
+		&i.IsAvailable,
+		&i.NightRate,
+	)
+	return i, err
 }
