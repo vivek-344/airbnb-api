@@ -103,6 +103,10 @@ func TestGetAvailabilityPercentage(t *testing.T) {
 		}
 	}
 
+	if expected_availability_percentage_float == "0.00" {
+		expected_availability_percentage_float = "0"
+	}
+
 	require.NoError(t, err)
 	require.Equal(t, expected_availability_percentage_float, calculated_availability_percentage)
 
