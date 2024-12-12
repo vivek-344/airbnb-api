@@ -82,7 +82,7 @@ The API returns a detailed JSON response containing the following metrics:
 - **Availability**: Dates when the room is available.  
 - **Amenities**: Information about specific room amenities like a balcony, fridge, indoor pool, and gaming console.  
 
-For a full example, see the [example.json](https://github.com/vivek-344/airbnb-api/example.json) file included in the repository.
+For a full example, see the [example.json](https://github.com/vivek-344/airbnb-api/blob/master/example.json) file included in the repository.
 
 ---
 
